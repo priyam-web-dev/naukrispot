@@ -437,9 +437,8 @@ function App() {
     };
   }, []);
 
-  if (authLoading) return <div className="loginShell"><div className="loginCard loadingCard">Checking admin session...</div></div>;
-  if (supabaseConfigured && !session) return <LoginScreen />;
-
+  // Keep this hook above the conditional returns below.
+  // Otherwise React sees a different hook order after login and throws error #310.
   const stats = useMemo(() => ({
     members: members.length,
     active: members.filter(x => x.status === "Active" && !isExpired(x.membership_expiry)).length,
@@ -447,6 +446,9 @@ function App() {
     review: jobs.filter(x => x.verification_status !== "Verified" && x.status === "Active").length,
     expired: jobs.filter(x => isExpired(x.deadline)).length
   }), [members, jobs]);
+
+  if (authLoading) return <div className="loginShell"><div className="loginCard loadingCard">Checking admin session...</div></div>;
+  if (supabaseConfigured && !session) return <LoginScreen />;
 
   const filteredMembers = members.filter(m => `${m.name} ${m.email} ${m.preferred_role} ${m.city}`.toLowerCase().includes(memberSearch.toLowerCase()));
   const filteredJobs = jobs.filter(j => `${j.title} ${j.company} ${j.location} ${j.skills}`.toLowerCase().includes(jobSearch.toLowerCase()));
